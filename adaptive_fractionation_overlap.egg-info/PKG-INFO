@@ -1,0 +1,15 @@
+Metadata-Version: 2.1
+Name: adaptive-fractionation-overlap
+Version: 0.0.1
+Summary: AF package for overlapping PTVs with OARs
+Author: Yoel Pérez Haas
+Author-email: yoel.perezhaas@usz.ch
+Keywords: python,adaptive fractionation
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: clinical tests
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+
+AF package for overlapping PTVs with OARs. Developed for prostate tumors
