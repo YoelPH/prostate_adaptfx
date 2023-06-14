@@ -1,0 +1,8 @@
+divide==6
+matplotlib==3.7.1
+numpy==1.24.2
+pandas==2.0.0
+scipy==1.10.1
+setuptools==67.8.0
+setuptools==53.0.0
+streamlit==1.23.1
