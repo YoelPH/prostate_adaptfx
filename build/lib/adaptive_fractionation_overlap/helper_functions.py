@@ -5,6 +5,7 @@ In this file are all helper functions that are needed for the adaptive fractiona
 
 import numpy as np
 from scipy.stats import norm, gamma
+import matplotlib.pyplot as plt
 
 
 
@@ -142,3 +143,35 @@ def max_action(accumulated_dose, dose_space, goal):
     sizer = np.argmin(np.abs(dose_space - max_action))
     sizer = 1 if sizer == 0 else sizer #Make sure that at least the minimum dose is delivered
     return sizer
+
+def actual_policy_plotter(policies_overlap,volume_space, probabilities):
+    color = 'tab:red'
+    fig, ax = plt.subplots()
+    ax.plot(volume_space,policies_overlap, label = 'optimal dose', color = color)
+    ax.set_xlabel('Volume overlap in cc') 
+    ax.set_ylabel('optimal dose')
+    ax.set_title('policy of actual fraction')
+    
+    color = 'tab:blue'
+    ax2 = ax.twinx()
+    ax2.set_ylabel('probability') 
+    ax2.plot(volume_space,probabilities, label = 'probabilities', color = color)
+    fig.legend()
+    return fig
+
+def analytic_plotting(fraction, number_of_fractions, values, volume_space, dose_space):
+    values[values < -10000000000] = 1.111111111111111
+    min_Value = np.min(values)
+    values[values == 1.111111111111111] = 1.1*min_Value
+    colormap = plt.cm.get_cmap('jet')
+    number_of_plots = number_of_fractions - fraction
+    fig, axs = plt.subplots(1,number_of_plots, figsize = (number_of_plots*10,10))
+    for index, ax in enumerate(axs): 
+        img = ax.imshow(values[number_of_plots - index-1],extent = [volume_space.min(), volume_space.max(), dose_space.max(),dose_space.min()],cmap=colormap,aspect = 'auto')
+        ax.set_title(f'value of fraction {fraction + index + 1}', fontsize = 24)
+        ax.set_xlabel('overlap volume', fontsize = 24)
+        ax.set_ylabel('accumulated dose', fontsize = 24)
+        ax.tick_params(axis='both', which='both', labelsize=20)
+    cbar = plt.colorbar(img, ax = ax)  
+    cbar.set_label('state value', fontsize = 24)
+    return fig

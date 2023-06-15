@@ -16,7 +16,7 @@ from .helper_functions import max_action
 
 
 
-def adaptive_fractionation_core(fraction, volumes, accumulated_dose, number_of_fractions = 5, min_dose = 7.25, max_dose = 9.25, mean_dose = 8, alpha = 4.476900395372424, beta = 0.10723772034080617):
+def adaptive_fractionation_core(fraction, volumes, accumulated_dose, number_of_fractions = 5, min_dose = 7.25, max_dose = 9.25, mean_dose = 8, alpha = 1.8380125313579265, beta = 0.2654168553532238):
     goal = number_of_fractions * mean_dose #dose to be reached
     actual_volume = volumes[-1]
     minimum_future = accumulated_dose + min_dose 
