@@ -28,10 +28,11 @@ if st.button('compute optimal dose', help = 'takes the given inputs from above t
     overlaps_str = overlaps_str.split()
     overlaps = [float(i) for i in overlaps_str]
     if function == 'actual fraction calculation':
-        [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities] = af.adaptive_fractionation_core(int(actual_fraction),np.array(overlaps), float(accumulated_dose), int(fractions), float(minimum_dose), float(maximum_dose), float(mean_dose))
+        [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty] = af.adaptive_fractionation_core(int(actual_fraction),np.array(overlaps), float(accumulated_dose), int(fractions), float(minimum_dose), float(maximum_dose), float(mean_dose))
         left2, right2 = st.columns(2)  
         with left2:
             st.metric(label="optimal dose for actual fraction", value= str(physical_dose) + 'Gy', delta = (physical_dose - float(mean_dose)))
+            st.metric(label="expected final penalty from this fraction", value = str(np.round(final_penalty,1)) + 'ccGy')
         with right2:
             st.pyplot(af.actual_policy_plotter(policies_overlap,volume_space,probabilities))
         figure = af.analytic_plotting(int(actual_fraction),int(fractions),values, volume_space, dose_space)    
