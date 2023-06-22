@@ -144,7 +144,17 @@ def max_action(accumulated_dose, dose_space, goal):
     sizer = 1 if sizer == 0 else sizer #Make sure that at least the minimum dose is delivered
     return sizer
 
-def actual_policy_plotter(policies_overlap,volume_space, probabilities):
+def actual_policy_plotter(policies_overlap: np.ndarray,volume_space: np.ndarray, probabilities: np.ndarray):
+    """plots the actual policy given the overlap in volume space and the policies in policies overlap
+
+    Args:
+        policies_overlap (np.ndarray): policy for each overlap
+        volume_space (np.ndarray): considered overlaps
+        probabilities (np.ndarray): probability distribution of overlaps
+
+    Returns:
+        matplotlib figure: a figure with the actual policy plotted
+    """
     color = 'tab:red'
     fig, ax = plt.subplots()
     ax.plot(volume_space,policies_overlap, label = 'optimal dose', color = color)

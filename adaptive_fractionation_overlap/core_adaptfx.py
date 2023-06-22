@@ -14,9 +14,31 @@ from .helper_functions import max_action
 
 
 
+[policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]
 
+def adaptive_fractionation_core(fraction: int, volumes: list, accumulated_dose: float, number_of_fractions: int = 5, min_dose: float = 7.25, max_dose: float = 9.25, mean_dose:float  = 8, alpha: float = 1.8380125313579265, beta:float = 0.2654168553532238):
+    """The core function computes the optimal dose for a single fraction.
+    The function optimizes the fractionation based on an objective function
+    which aims to maximize the tumor coverage, i.e. minimize the dose when
+    PTV-OAR overlap is large and maximize the dose when the overlap is small.
 
-def adaptive_fractionation_core(fraction, volumes, accumulated_dose, number_of_fractions = 5, min_dose = 7.25, max_dose = 9.25, mean_dose = 8, alpha = 1.8380125313579265, beta = 0.2654168553532238):
+    Args:
+        fraction (int): number of actual fraction
+        volumes (list): list of all volume overlaps observed so far
+        accumulated_dose (float): accumulated physical dose in tumor
+        number_of_fractions (int, optional): number of fractions given in total. Defaults to 5.
+        min_dose (float, optional): minimum phyical dose delivered in each fraction. Defaults to 7.25.
+        max_dose (float, optional): maximum dose delivered in each fraction. Defaults to 9.25.
+        mean_dose (int, optional): mean dose to be delivered over all fractions. Defaults to 8.
+        alpha (float, optional): alpha value of gamma distribution. Defaults to 1.8380125313579265.
+        beta (float, optional): beta value of gamma distribution. Defaults to 0.2654168553532238.
+
+    Returns:
+        numpy arrays and floats: returns 9 arrays: policies (all future policies), policies_overlap (policies of the actual overlaps),
+        volume_space (all considered overlap volumes), physical_dose (physical dose to be delivered in the actual fraction),
+        penalty_added (penalty added in the actual fraction if physical_dose is applied), values (values of all future fractions. index 0 is the last fraction),
+        probabilits (probability of each overlap volume to occure), final_penalty (projected final penalty starting from the actual fraction)
+    """
     goal = number_of_fractions * mean_dose #dose to be reached
     actual_volume = volumes[-1]
     if fraction == 1:
@@ -134,7 +156,22 @@ def adaptive_fractionation_core(fraction, volumes, accumulated_dose, number_of_f
     return [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]
     
    
-def adaptfx_full(volumes, number_of_fractions = 5, min_dose = 7.25, max_dose = 9.25, mean_dose = 8):
+def adaptfx_full(volumes: list, number_of_fractions: float = 5, min_dose: float = 7.25, max_dose: float = 9.25, mean_dose: float = 8):
+    """Computes a full adaptive fractionation plan when all overlap volumes are given.
+
+    Args:
+        volumes (list): list of all volume overlaps observed
+        number_of_fractions (float, optional): number of fractions delivered. Defaults to 5.
+        min_dose (float, optional): minimum phyical dose delivered in each fraction. Defaults to 7.25.
+        max_dose (float, optional): maximum dose delivered in each fraction. Defaults to 9.25.
+        mean_dose (int, optional): mean dose to be delivered over all fractions. Defaults to 8.
+
+    Returns:
+        numpy arrays: physical dose (array with all optimal doses to be delivered),
+        accumullated_doses (array with the accumulated dose in each fraction),
+        total_penalty (final penalty after fractionation if all suggested doses are applied)
+    """
+    
     physical_doses = np.zeros(number_of_fractions)
     accumulated_doses = np.zeros(number_of_fractions)
     for index, frac in enumerate(range(1,6)):
