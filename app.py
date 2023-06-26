@@ -18,7 +18,7 @@ with right:
     minimum_dose = st.text_input('minimum dose', '7.25', help = 'insert the minimum dose in Gy')
     maximum_dose = st.text_input('maximum dose', '9.25', help = 'insert the maximum dose in Gy')
     mean_dose = st.text_input('mean dose to be delivered over all fractions', '8', help = 'insert mean dose in Gy')
-    accumulated_dose = st.text_input('accumulated physical dose in previous fractions', disabled = (function =='full plan calculation'), help = 'the accumulated dose is only needed in the actual fraction calculation')
+    accumulated_dose = st.text_input('accumulated physical dose in previous fractions', disabled = (function =='full plan calculation'), help = 'the accumulated dose is only needed in the actual fraction calculation set to 0 if actual fraction is 1')
 
 
 st.header('Results')
@@ -31,8 +31,11 @@ if st.button('compute optimal dose', help = 'takes the given inputs from above t
         [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty] = af.adaptive_fractionation_core(int(actual_fraction),np.array(overlaps), float(accumulated_dose), int(fractions), float(minimum_dose), float(maximum_dose), float(mean_dose))
         left2, right2 = st.columns(2)  
         with left2:
+            actual_value = 'Goal can not be reached' if final_penalty <= -100000000000 else str(np.round(final_penalty,1)) + 'ccGy'
             st.metric(label="optimal dose for actual fraction", value= str(physical_dose) + 'Gy', delta = (physical_dose - float(mean_dose)))
-            st.metric(label="expected final penalty from this fraction", value = str(np.round(final_penalty,1)) + 'ccGy')
+            st.metric(label="expected final penalty from this fraction", value = actual_value)
+            if final_penalty <= -100000000000:
+                st.write('the minimal dose is delivered if we overdose, the maximal dose is delivered if we underdose')
         with right2:
             st.pyplot(af.actual_policy_plotter(policies_overlap,volume_space,probabilities))
         figure = af.analytic_plotting(int(actual_fraction),int(fractions),values, volume_space, dose_space)    

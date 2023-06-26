@@ -170,18 +170,28 @@ def actual_policy_plotter(policies_overlap: np.ndarray,volume_space: np.ndarray,
     return fig
 
 def analytic_plotting(fraction, number_of_fractions, values, volume_space, dose_space):
-    values[values < -10000000000] = 1.111111111111111
+    values[values < -10000000000] = -20.222222222222
     min_Value = np.min(values)
-    values[values == 1.111111111111111] = 1.1*min_Value
+    values[values == -20.222222222222] = 1.1*min_Value
     colormap = plt.cm.get_cmap('jet')
     number_of_plots = number_of_fractions - fraction
     fig, axs = plt.subplots(1,number_of_plots, figsize = (number_of_plots*10,10))
-    for index, ax in enumerate(axs): 
-        img = ax.imshow(values[number_of_plots - index-1],extent = [volume_space.min(), volume_space.max(), dose_space.max(),dose_space.min()],cmap=colormap,aspect = 'auto')
-        ax.set_title(f'value of fraction {fraction + index + 1}', fontsize = 24)
-        ax.set_xlabel('overlap volume', fontsize = 24)
-        ax.set_ylabel('accumulated dose', fontsize = 24)
-        ax.tick_params(axis='both', which='both', labelsize=20)
-    cbar = plt.colorbar(img, ax = ax)  
-    cbar.set_label('state value', fontsize = 24)
+    if number_of_plots > 1:
+        for index, ax in enumerate(axs): 
+            img = ax.imshow(values[number_of_plots - index-1],extent = [volume_space.min(), volume_space.max(), dose_space.max(),dose_space.min()],cmap=colormap,aspect = 'auto')
+            ax.set_title(f'value of fraction {fraction + index + 1}', fontsize = 24)
+            ax.set_xlabel('overlap volume', fontsize = 24)
+            ax.set_ylabel('accumulated dose', fontsize = 24)
+            ax.tick_params(axis='both', which='both', labelsize=20)
+        cbar = plt.colorbar(img, ax = ax)  
+        cbar.set_label('state value', fontsize = 24)
+    else:
+        img = axs.imshow(values[0], extent = [volume_space.min(), volume_space.max(), dose_space.max(),dose_space.min()],cmap=colormap,aspect = 'auto')
+        axs.set_title(f'value of fraction {fraction + 1}', fontsize = 24)
+        axs.set_xlabel('overlap volume', fontsize = 24)
+        axs.set_ylabel('accumulated dose', fontsize = 24)
+        axs.tick_params(axis='both', which='both', labelsize=20)
+        cbar = plt.colorbar(img, ax = axs)  
+        cbar.set_label('state value', fontsize = 24) 
+
     return fig

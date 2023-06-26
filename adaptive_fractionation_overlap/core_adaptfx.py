@@ -47,11 +47,10 @@ def adaptive_fractionation_core(fraction: int, volumes: list, accumulated_dose: 
         actual_policy = mean_dose
         volume_space = np.ones(200)*actual_volume
         probabilities = np.ones(200)*1/200
-        dose_space = np.arange(minimum_future,goal, 0.25) #spans the dose space delivered to the tumor
-        dose_space = np.concatenate((dose_space, [goal, goal + 0.25])) # add an additional state that overdoses and needs to be prevented
-        bound = goal + 0.25
+        dose_space = np.arange(minimum_future,goal, 0.05) #spans the dose space delivered to the tumor
+        dose_space = np.concatenate((dose_space, [goal, goal + 0.05])) # add an additional state that overdoses and needs to be prevented
+        bound = goal + 0.05
         delivered_doses = np.arange(min_dose,max_dose + 0.01,0.05) #spans the action space of all deliverable doses
-
         values = np.zeros(((number_of_fractions - fraction), len(dose_space), len(volume_space))) # 2d values list with first indice being the accumulated dose and second being the overlap volume
         policies = np.zeros(((number_of_fractions - fraction), len(dose_space), len(volume_space)))
         policies_overlap = np.zeros(len(volume_space))
@@ -60,9 +59,9 @@ def adaptive_fractionation_core(fraction: int, volumes: list, accumulated_dose: 
         distribution = norm(loc = volumes.mean(), scale = std)
         volume_space = get_state_space(distribution)
         probabilities = probdist(distribution,volume_space) #produce probabilities of the respective volumes
-        dose_space = np.arange(minimum_future,goal, 0.25) #spans the dose space delivered to the tumor
-        dose_space = np.concatenate((dose_space, [goal, goal + 0.25])) # add an additional state that overdoses and needs to be prevented
-        bound = goal + 0.25
+        dose_space = np.arange(minimum_future,goal, 0.05) #spans the dose space delivered to the tumor
+        dose_space = np.concatenate((dose_space, [goal, goal + 0.05])) # add an additional state that overdoses and needs to be prevented
+        bound = goal + 0.05
         delivered_doses = np.arange(min_dose,max_dose + 0.01,0.05) #spans the action space of all deliverable doses
         policies_overlap = np.zeros(len(volume_space))
         values = np.zeros(((number_of_fractions - fraction), len(dose_space), len(volume_space))) # 2d values list with first indice being the accumulated dose and second being the overlap volume
