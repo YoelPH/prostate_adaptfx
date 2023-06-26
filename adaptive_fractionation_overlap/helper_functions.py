@@ -169,7 +169,20 @@ def actual_policy_plotter(policies_overlap: np.ndarray,volume_space: np.ndarray,
     fig.legend()
     return fig
 
-def analytic_plotting(fraction, number_of_fractions, values, volume_space, dose_space):
+def analytic_plotting(fraction: int, number_of_fractions: int, values: np.ndarray, volume_space: np.ndarray, dose_space: np.ndarray):
+    """plots all future values given the values calculated by adaptive_fractionation_core.
+    Only available for fractions 1 - (number of fractions - 1)
+
+    Args:
+        fraction (int): number of actual fraction
+        number_of_fractions (int): total number of fractions
+        values (np.ndarray): remaining_fractions x volume_space x dose_space dimensional array with values for each volume/dose pair
+        volume_space (np.ndarray): 1 dimensional array with all considered volume overlaps
+        dose_space (np.ndarray): 1 dimensional array with all considered future accumulated doses
+
+    Returns:
+        matplotlib.fig: returns a figure with all values plotted as subfigures
+    """
     values[values < -10000000000] = -20.222222222222
     min_Value = np.min(values)
     values[values == -20.222222222222] = 1.1*min_Value
