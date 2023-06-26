@@ -36,6 +36,8 @@ if st.button('compute optimal dose', help = 'takes the given inputs from above t
             st.metric(label="expected final penalty from this fraction", value = actual_value)
             if final_penalty <= -100000000000:
                 st.write('the minimal dose is delivered if we overdose, the maximal dose is delivered if we underdose')
+                st.markdown('by taking this approach and delivering the minimum/maximum dose in each fraction we miss the goal by:')
+                st.metric(label= '', value = str(float(accumulated_dose) + float(physical_dose)*(int(fractions) - int(actual_fraction) + 1) - float(mean_dose) * int(fractions)))
         with right2:
             st.pyplot(af.actual_policy_plotter(policies_overlap,volume_space,probabilities))
         figure = af.analytic_plotting(int(actual_fraction),int(fractions),values, volume_space, dose_space)    

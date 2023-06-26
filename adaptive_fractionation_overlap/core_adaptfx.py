@@ -72,6 +72,12 @@ def adaptive_fractionation_core(fraction: int, volumes: list, accumulated_dose: 
             policies_overlap = np.ones(200)*actual_policy
             values = np.ones(((number_of_fractions - fraction), len(dose_space), len(volume_space))) * -1000000000000 
             actual_value = np.ones(1) * -1000000000000
+        elif goal - accumulated_dose > (number_of_fractions + 1 - fraction) * max_dose:
+            actual_policy = max_dose
+            policies = np.ones(200)*actual_policy
+            policies_overlap = np.ones(200)*actual_policy
+            values = np.ones(((number_of_fractions - fraction), len(dose_space), len(volume_space))) * -1000000000000 
+            actual_value = np.ones(1) * -1000000000000
         else:
             for state, fraction_state in enumerate(np.arange(number_of_fractions, fraction-1, -1)):
                 
