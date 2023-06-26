@@ -1,9 +1,0 @@
-setup.py
-adaptive_fractionation_overlap/__init__.py
-adaptive_fractionation_overlap/core_adaptfx.py
-adaptive_fractionation_overlap/helper_functions.py
-adaptive_fractionation_overlap.egg-info/PKG-INFO
-adaptive_fractionation_overlap.egg-info/SOURCES.txt
-adaptive_fractionation_overlap.egg-info/dependency_links.txt
-adaptive_fractionation_overlap.egg-info/requires.txt
-adaptive_fractionation_overlap.egg-info/top_level.txt
