@@ -54,6 +54,7 @@ def adaptive_fractionation_core(fraction: int, volumes: list, accumulated_dose: 
         values = np.zeros(((number_of_fractions - fraction), len(dose_space), len(volume_space))) # 2d values list with first indice being the accumulated dose and second being the overlap volume
         policies = np.zeros(((number_of_fractions - fraction), len(dose_space), len(volume_space)))
         policies_overlap = np.zeros(len(volume_space))
+        actual_value = np.ones(1) * actual_volume * (number_of_fractions - fraction +1)
     else:
         std = std_calc(volumes, alpha, beta)
         distribution = norm(loc = volumes.mean(), scale = std)

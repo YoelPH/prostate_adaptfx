@@ -39,12 +39,13 @@ if st.button('compute optimal dose', help = 'takes the given inputs from above t
                 st.markdown('by taking this approach and delivering the minimum/maximum dose in each fraction we miss the goal by:')
                 st.metric(label= '', value = str(float(accumulated_dose) + float(physical_dose)*(int(fractions) - int(actual_fraction) + 1) - float(mean_dose) * int(fractions)))
         with right2:
-            st.pyplot(af.actual_policy_plotter(policies_overlap,volume_space,probabilities))
-        figure = af.analytic_plotting(int(actual_fraction),int(fractions),values, volume_space, dose_space)    
+            st.pyplot(af.actual_policy_plotter(policies_overlap,volume_space,probabilities))  
         with st.expander('see Analytics'):
             st.header('Analytics')
-            st.pyplot(figure)
-            st.write('The figures above show the value function for each future fraction. These functions help to identify whether a potential mistake has been made in the calculation.')
+            if int(actual_fraction) != int(fractions):
+                figure = af.analytic_plotting(int(actual_fraction),int(fractions),values, volume_space, dose_space)    
+                st.pyplot(figure)
+                st.write('The figures above show the value function for each future fraction. These functions help to identify whether a potential mistake has been made in the calculation.')
     else:
         [physical_doses, accumulated_doses, total_penalty] = af.adaptfx_full(np.array(overlaps), int(fractions), float(minimum_dose), float(maximum_dose), float(mean_dose))
         col1, col2, col3, col4, col5 = st.columns(5)  
