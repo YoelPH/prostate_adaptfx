@@ -14,8 +14,6 @@ from .helper_functions import max_action
 
 
 
-[policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]
-
 def adaptive_fractionation_core(fraction: int, volumes: list, accumulated_dose: float, number_of_fractions: int = 5, min_dose: float = 7.25, max_dose: float = 9.25, mean_dose:float  = 8, alpha: float = 1.8380125313579265, beta:float = 0.2654168553532238):
     """The core function computes the optimal dose for a single fraction.
     The function optimizes the fractionation based on an objective function
