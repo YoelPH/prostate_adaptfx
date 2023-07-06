@@ -5,8 +5,20 @@ st.set_page_config(layout="wide")
 st.title('Adaptive Fractionation for prostate cancer interface')
 st.markdown('## info \n This web app is supposed to be used as user interface to compute the optimal dose to be delivered in prostate adaptive fractionation if you have any questions please contact [yoel.perezhaas@usz.ch](mailto:yoel.perezhaas@usz.ch)')
 
+@st.cache_data
+def convert_df(df):
+    """converts a dataframe to csv
+
+    Args:
+        df (pd.DataFrame): dataframe to be converted
+
+    Returns:
+        str: csv as a string
+    """
+    return df.to_csv(index=False).encode('utf-8')
+
 st.header('User Input')
-function = st.radio('Type of adaptive fractionation', ['actual fraction calculation','full plan calculation'])
+function = st.radio('Type of adaptive fractionation', ['actual fraction calculation','precompute plan','full plan calculation'])
 
 
 left, right = st.columns(2)  
@@ -39,13 +51,28 @@ if st.button('compute optimal dose', help = 'takes the given inputs from above t
                 st.markdown('by taking this approach and delivering the minimum/maximum dose in each fraction we miss the goal by:')
                 st.metric(label= '', value = str(float(accumulated_dose) + float(physical_dose)*(int(fractions) - int(actual_fraction) + 1) - float(mean_dose) * int(fractions)))
         with right2:
-            st.pyplot(af.actual_policy_plotter(policies_overlap,volume_space,probabilities))  
+            st.pyplot(af.actual_policy_plotter(policies_overlap,volume_space,probabilities))
         with st.expander('see Analytics'):
             st.header('Analytics')
             if int(actual_fraction) != int(fractions):
                 figure = af.analytic_plotting(int(actual_fraction),int(fractions),values, volume_space, dose_space)    
                 st.pyplot(figure)
                 st.write('The figures above show the value function for each future fraction. These functions help to identify whether a potential mistake has been made in the calculation.')
+    elif function == 'precompute plan':
+        with st.spinner('computing plans. This might take up to 2-3 minutes'):
+            volume_x_dose, volumes_to_check, predicted_policies = af.precompute_plan(int(actual_fraction),np.array(overlaps), float(accumulated_dose), int(fractions), float(minimum_dose), float(maximum_dose), float(mean_dose))
+        csv = convert_df(volume_x_dose)
+        left2, right2 = st.columns(2)  
+        with left2:
+            st.dataframe(data = volume_x_dose,height = 600, hide_index = True)
+            st.download_button(
+            "Download table",
+            csv,
+            "precomputed_plans.csv",
+            "text/csv",
+            key='data')
+        with right2:
+            st.pyplot(af.actual_policy_plotter(predicted_policies,volumes_to_check))   
     else:
         [physical_doses, accumulated_doses, total_penalty] = af.adaptfx_full(np.array(overlaps), int(fractions), float(minimum_dose), float(maximum_dose), float(mean_dose))
         col1, col2, col3, col4, col5 = st.columns(5)  
