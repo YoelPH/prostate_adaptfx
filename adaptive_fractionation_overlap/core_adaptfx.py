@@ -14,7 +14,7 @@ from .helper_functions import probdist
 from .helper_functions import max_action
 
 
-def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_dose: float, number_of_fractions: int = 5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose:float  = 8, dose_steps: float = 0.25, alpha: float = 1.8380125313579265, beta:float = 0.2654168553532238):
+def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_dose: float, number_of_fractions: int = 5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose:float  = 8, dose_steps: float = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114):
     """The core function computes the optimal dose for a single fraction.
     The function optimizes the fractionation based on an objective function
     which aims to maximize the tumor coverage, i.e. minimize the dose when

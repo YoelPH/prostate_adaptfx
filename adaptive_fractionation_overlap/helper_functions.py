@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 def data_fit(data):
     """
-    This function fits the alpha and beta value for the prior
+    This function fits a normal distribution for the given data
 
     Parameters
     ----------
@@ -46,13 +46,13 @@ def hyperparam_fit(data):
 
 def std_calc(measured_data, alpha, beta):
     """
-    calculates the most likely standard deviation for a list of k sparing factors and a gamma conjugate prior
+    calculates the most likely standard deviation for a list of k overlap volumes and a gamma prior
     measured_data: list/array with k sparing factors
 
     Parameters
     ----------
     measured_data : list/array
-        list/array with k sparing factors
+        list/array with k overlap volumes
     alpha : float
         shape of gamma distribution
     beta : float
@@ -65,7 +65,7 @@ def std_calc(measured_data, alpha, beta):
 
     """
     n = len(measured_data)
-    std_values = np.arange(0.00001, 0.5, 0.00001)
+    std_values = np.arange(0.001, 10, 0.001)
     likelihood_values = np.zeros(len(std_values))
     for index, value in enumerate(std_values):
         likelihood_values[index] = (
@@ -73,11 +73,9 @@ def std_calc(measured_data, alpha, beta):
             / value ** (n - 1)
             * np.exp(-1 / beta * value)
             * np.exp(-np.var(measured_data) / (2 * (value**2 / n)))
-        )  # here i have to check whether it is good.
+        )
     std = std_values[np.argmax(likelihood_values)]
     return std
-
-
 
 
 
