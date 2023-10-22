@@ -25,8 +25,8 @@ def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_
         volumes (np.ndarray): list of all volume overlaps observed so far
         accumulated_dose (float): accumulated physical dose in tumor
         number_of_fractions (int, optional): number of fractions given in total. Defaults to 5.
-        min_dose (float, optional): minimum phyical dose delivered in each fraction. Defaults to 7.25.
-        max_dose (float, optional): maximum dose delivered in each fraction. Defaults to 9.25.
+        min_dose (float, optional): minimum phyical dose delivered in each fraction. Defaults to 7.5.
+        max_dose (float, optional): maximum dose delivered in each fraction. Defaults to 9.5.
         mean_dose (int, optional): mean dose to be delivered over all fractions. Defaults to 8.
         alpha (float, optional): alpha value of gamma distribution. Defaults to 1.8380125313579265.
         beta (float, optional): beta value of gamma distribution. Defaults to 0.2654168553532238.
@@ -166,8 +166,8 @@ def adaptfx_full(volumes: list, number_of_fractions: float = 5, min_dose: float 
     Args:
         volumes (list): list of all volume overlaps observed
         number_of_fractions (float, optional): number of fractions delivered. Defaults to 5.
-        min_dose (float, optional): minimum phyical dose delivered in each fraction. Defaults to 7.25.
-        max_dose (float, optional): maximum dose delivered in each fraction. Defaults to 9.25.
+        min_dose (float, optional): minimum phyical dose delivered in each fraction. Defaults to 7.5.
+        max_dose (float, optional): maximum dose delivered in each fraction. Defaults to 9.5.
         mean_dose (int, optional): mean dose to be delivered over all fractions. Defaults to 8.
 
     Returns:
@@ -185,7 +185,7 @@ def adaptfx_full(volumes: list, number_of_fractions: float = 5, min_dose: float 
         else:
             [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac, volumes = volumes,accumulated_dose = accumulated_doses[index], min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta)
         physical_doses[index] = physical_dose
-    total_penalty = ((physical_doses - 7.25) * volumes[-5:]).sum()
+    total_penalty = ((physical_doses - min_dose) * volumes[-5:]).sum()
     return physical_doses, accumulated_doses, total_penalty
 
 
@@ -199,8 +199,8 @@ def precompute_plan(fraction: int, volumes: np.ndarray, accumulated_dose: float,
         volumes (np.ndarray): list of all volume overlaps observed so far
         accumulated_dose (float): accumulated physical dose in tumor
         number_of_fractions (int, optional): number of fractions given in total. Defaults to 5.
-        min_dose (float, optional): minimum phyical dose delivered in each fraction. Defaults to 7.25.
-        max_dose (float, optional): maximum dose delivered in each fraction. Defaults to 9.25.
+        min_dose (float, optional): minimum phyical dose delivered in each fraction. Defaults to 7.5.
+        max_dose (float, optional): maximum dose delivered in each fraction. Defaults to 9.5.
         mean_dose (int, optional): mean dose to be delivered over all fractions. Defaults to 8.
         alpha (float, optional): alpha value of gamma distribution. Defaults to 1.8380125313579265.
         beta (float, optional): beta value of gamma distribution. Defaults to 0.2654168553532238.
