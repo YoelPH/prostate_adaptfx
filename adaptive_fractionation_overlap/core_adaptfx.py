@@ -160,7 +160,7 @@ def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_
     return [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]
     
    
-def adaptfx_full(volumes: list, number_of_fractions: float = 5, min_dose: float = 7.25, max_dose: float = 9.25, mean_dose: float = 8, dose_steps: float = 0.25, alpha: float = 1.8380125313579265, beta:float = 0.2654168553532238):
+def adaptfx_full(volumes: list, number_of_fractions: float = 5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose: float = 8, dose_steps: float = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114):
     """Computes a full adaptive fractionation plan when all overlap volumes are given.
 
     Args:
@@ -189,7 +189,7 @@ def adaptfx_full(volumes: list, number_of_fractions: float = 5, min_dose: float 
     return physical_doses, accumulated_doses, total_penalty
 
 
-def precompute_plan(fraction: int, volumes: np.ndarray, accumulated_dose: float, number_of_fractions: int = 5, min_dose: float = 7.25, max_dose: float = 9.25, mean_dose:float  = 8, dose_steps = 0.25, alpha: float = 1.8380125313579265, beta:float = 0.2654168553532238):
+def precompute_plan(fraction: int, volumes: np.ndarray, accumulated_dose: float, number_of_fractions: int = 5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose:float  = 8, dose_steps = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114):
     """Precomputes all possible delivered doses in the next fraction by looping through possible
     observed overlap volumes. Returning a df and two lists with the overlap volumes and
     the respective dose that would be delivered.
