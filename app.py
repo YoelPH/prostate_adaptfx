@@ -94,6 +94,6 @@ if st.button('compute optimal dose', help = 'takes the given inputs from above t
             st.metric(label="**fifth fraction**", value = str(physical_doses[4]) + 'Gy', delta = (physical_doses[4] - float(mean_dose)))
         st.header('Plan summary')
         st.markdown('The adaptive plan achieved a total penalty of:')
-        st.metric(label = "penalty", value = str(total_penalty) + 'ccGy', delta = np.round(total_penalty - (np.array(overlaps[-5:])*float(minimum_dose)).sum(),2), delta_color= 'inverse')
+        st.metric(label = "penalty", value = str(total_penalty) + 'ccGy', delta = np.round(total_penalty - (np.array(overlaps[-5:])*(float(mean_dose)- float(minimum_dose))).sum(),2), delta_color= 'inverse')
         st.markdown('The arrow shows the comparison to standard fractionation, i.e. (number of fractions x mean dose). A green arrow shows an improvement.')
 
