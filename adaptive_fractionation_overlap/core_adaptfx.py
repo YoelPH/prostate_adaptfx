@@ -178,14 +178,14 @@ def adaptfx_full(volumes: list, number_of_fractions: float = 5, min_dose: float 
     
     physical_doses = np.zeros(number_of_fractions)
     accumulated_doses = np.zeros(number_of_fractions)
-    for index, frac in enumerate(range(1,6)):
+    for index, frac in enumerate(range(1,number_of_fractions +1)):
         if frac != number_of_fractions:
             [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac,volumes = volumes[:-number_of_fractions+frac], accumulated_dose = accumulated_doses[index], min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta)
             accumulated_doses[index+1] = accumulated_doses[index] + physical_dose
         else:
             [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac, volumes = volumes,accumulated_dose = accumulated_doses[index], min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta)
         physical_doses[index] = physical_dose
-    total_penalty = ((physical_doses - min_dose) * volumes[-5:]).sum()
+    total_penalty = ((physical_doses - min_dose) * volumes[-number_of_fractions:]).sum()
     return physical_doses, accumulated_doses, total_penalty
 
 
