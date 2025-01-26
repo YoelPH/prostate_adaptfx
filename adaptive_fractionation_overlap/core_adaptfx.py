@@ -160,7 +160,7 @@ def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_
     return [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]
     
    
-def adaptfx_full(volumes: list, number_of_fractions: float = 5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose: float = 8, dose_steps: float = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114):
+def adaptfx_full(volumes: list, number_of_fractions: int = 5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose: float = 8, dose_steps: float = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114):
     """Computes a full adaptive fractionation plan when all overlap volumes are given.
 
     Args:
@@ -175,15 +175,14 @@ def adaptfx_full(volumes: list, number_of_fractions: float = 5, min_dose: float 
         accumullated_doses (array with the accumulated dose in each fraction),
         total_penalty (final penalty after fractionation if all suggested doses are applied)
     """
-    
     physical_doses = np.zeros(number_of_fractions)
     accumulated_doses = np.zeros(number_of_fractions)
     for index, frac in enumerate(range(1,number_of_fractions +1)):
         if frac != number_of_fractions:
-            [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac,volumes = volumes[:-number_of_fractions+frac], accumulated_dose = accumulated_doses[index], min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta)
+            [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac, volumes = volumes[:-number_of_fractions+frac], accumulated_dose = accumulated_doses[index], number_of_fractions= number_of_fractions, min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta)
             accumulated_doses[index+1] = accumulated_doses[index] + physical_dose
         else:
-            [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac, volumes = volumes,accumulated_dose = accumulated_doses[index], min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta)
+            [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac, volumes = volumes,accumulated_dose = accumulated_doses[index], number_of_fractions= number_of_fractions, min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta)
         physical_doses[index] = physical_dose
     total_penalty = ((physical_doses - min_dose) * volumes[-number_of_fractions:]).sum()
     return physical_doses, accumulated_doses, total_penalty

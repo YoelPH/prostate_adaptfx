@@ -76,24 +76,13 @@ if st.button('compute optimal dose', help = 'takes the given inputs from above t
             st.pyplot(af.actual_policy_plotter(predicted_policies,volumes_to_check))   
     else:
         [physical_doses, accumulated_doses, total_penalty] = af.adaptfx_full(volumes = np.array(overlaps), number_of_fractions = int(fractions), min_dose = float(minimum_dose), max_dose = float(maximum_dose), mean_dose = float(mean_dose), dose_steps = float(dose_steps))
-        col1, col2, col3, col4, col5 = st.columns(5)  
-        with col1:
-            st.metric(label="**overlap**", value = str(overlaps[-5]) + 'cc')
-            st.metric(label="**first fraction**", value = str(physical_doses[0]) + 'Gy', delta = (physical_doses[0] - float(mean_dose)))
-        with col2:
-            st.metric(label="**overlap**", value = str(overlaps[-4]) + 'cc')
-            st.metric(label="**second fraction**", value = str(physical_doses[1]) + 'Gy', delta = (physical_doses[1] - float(mean_dose)))
-        with col3:
-            st.metric(label="**overlap**", value = str(overlaps[-3]) + 'cc')
-            st.metric(label="**third fraction**", value = str(physical_doses[2]) + 'Gy', delta = (physical_doses[2] - float(mean_dose)))
-        with col4:
-            st.metric(label="**overlap**", value = str(overlaps[-2]) + 'cc')
-            st.metric(label="**fourth fraction**", value = str(physical_doses[3]) + 'Gy', delta = (physical_doses[3] - float(mean_dose)))
-        with col5:
-            st.metric(label="**overlap**", value = str(overlaps[-1]) + 'cc')
-            st.metric(label="**fifth fraction**", value = str(physical_doses[4]) + 'Gy', delta = (physical_doses[4] - float(mean_dose)))
+        cols = st.columns(int(fractions))
+        for i, col in enumerate(cols):
+            with col:
+                st.metric(label=f"**overlap**", value=f"{overlaps[-(int(fractions) - i)]}cc")
+                st.metric(label=f"**fraction {i + 1}**", value=f"{physical_doses[i]}Gy", delta=(physical_doses[i] - float(mean_dose)))
         st.header('Plan summary')
         st.markdown('The adaptive plan achieved a total penalty of:')
-        st.metric(label = "penalty", value = str(total_penalty) + 'ccGy', delta = np.round(total_penalty - (np.array(overlaps[-5:])*(float(mean_dose)- float(minimum_dose))).sum(),2), delta_color= 'inverse')
+        st.metric(label = "penalty", value = str(total_penalty) + 'ccGy', delta = np.round(total_penalty - (np.array(overlaps[-int(fractions):])*(float(mean_dose)- float(minimum_dose))).sum(),2), delta_color= 'inverse')
         st.markdown('The arrow shows the comparison to standard fractionation, i.e. (number of fractions x mean dose). A green arrow shows an improvement.')
 
