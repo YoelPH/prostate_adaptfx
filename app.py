@@ -24,6 +24,7 @@ function = st.radio('Type of adaptive fractionation', ['actual fraction calculat
 left, right = st.columns(2)  
 with left:
     fractions = st.text_input('total number of fractions', '5', help = 'insert the number of total fractions in the treatment')
+    steepness = st.text_input('steepness of the DVH dose gradient', '-0.5', help = 'insert the steepness of DVH gradient')
     overlaps_str = st.text_input('observed overlap volumes in cc separated by spaces', help = 'insert ALL observed overlaps for the patient. for a full plan at least (number of fractions - 1) volumes are required')
     actual_fraction = st.text_input('number of actual fraction', disabled = (function =='full plan calculation'), help = 'the actual fraction number is only needed for the actual fraction calculation')
 with right:
@@ -41,7 +42,7 @@ if st.button('compute optimal dose', help = 'takes the given inputs from above t
     overlaps_str = overlaps_str.split()
     overlaps = [float(i) for i in overlaps_str]
     if function == 'actual fraction calculation':
-        [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty] = af.adaptive_fractionation_core(fraction = int(actual_fraction),volumes = np.array(overlaps), accumulated_dose = float(accumulated_dose), number_of_fractions = int(fractions), min_dose = float(minimum_dose), max_dose = float(maximum_dose), mean_dose = float(mean_dose), dose_steps = float(dose_steps), minimum_benefit= float(minimum_benefit))
+        [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty] = af.adaptive_fractionation_core(fraction = int(actual_fraction),volumes = np.array(overlaps), accumulated_dose = float(accumulated_dose), steepness = float(steepness), number_of_fractions = int(fractions), min_dose = float(minimum_dose), max_dose = float(maximum_dose), mean_dose = float(mean_dose), dose_steps = float(dose_steps), minimum_benefit= float(minimum_benefit))
         left2, right2 = st.columns(2)  
         with left2:
             actual_value = 'Goal can not be reached' if final_penalty <= -100000000000 else str(np.round(final_penalty,1)) + 'ccGy'
@@ -61,7 +62,7 @@ if st.button('compute optimal dose', help = 'takes the given inputs from above t
                 st.write('The figures above show the value function for each future fraction. These functions help to identify whether a potential mistake has been made in the calculation.')
     elif function == 'precompute plan':
         with st.spinner('computing plans. This might take up to 2-3 minutes'):
-            volume_x_dose, volumes_to_check, predicted_policies = af.precompute_plan(fraction = int(actual_fraction), volumes = np.array(overlaps), accumulated_dose = float(accumulated_dose), number_of_fractions = int(fractions), min_dose = float(minimum_dose), max_dose = float(maximum_dose), mean_dose = float(mean_dose), dose_steps = float(dose_steps), minimum_benefit = float(minimum_benefit))
+            volume_x_dose, volumes_to_check, predicted_policies = af.precompute_plan(fraction = int(actual_fraction), volumes = np.array(overlaps), accumulated_dose = float(accumulated_dose), steepness = float(steepness), number_of_fractions = int(fractions), min_dose = float(minimum_dose), max_dose = float(maximum_dose), mean_dose = float(mean_dose), dose_steps = float(dose_steps), minimum_benefit = float(minimum_benefit))
         csv = convert_df(volume_x_dose)
         left2, right2 = st.columns(2)  
         with left2:
@@ -75,7 +76,7 @@ if st.button('compute optimal dose', help = 'takes the given inputs from above t
         with right2:
             st.pyplot(af.actual_policy_plotter(predicted_policies,volumes_to_check))   
     else:
-        [physical_doses, accumulated_doses, total_penalty] = af.adaptfx_full(volumes = np.array(overlaps), number_of_fractions = int(fractions), min_dose = float(minimum_dose), max_dose = float(maximum_dose), mean_dose = float(mean_dose), dose_steps = float(dose_steps), minimum_benefit = float(minimum_benefit))
+        [physical_doses, accumulated_doses, total_penalty] = af.adaptfx_full(volumes = np.array(overlaps), number_of_fractions = int(fractions), steepness = float(steepness), min_dose = float(minimum_dose), max_dose = float(maximum_dose), mean_dose = float(mean_dose), dose_steps = float(dose_steps), minimum_benefit = float(minimum_benefit))
         cols = st.columns(int(fractions))
         for i, col in enumerate(cols):
             with col:

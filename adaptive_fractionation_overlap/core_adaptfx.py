@@ -12,9 +12,12 @@ from .helper_functions import std_calc
 from .helper_functions import get_state_space
 from .helper_functions import probdist
 from .helper_functions import max_action
+from .helper_functions import penalty_calc_single
+from .helper_functions import penalty_calc_matrix
+from .helper_functions import penalty_calc_single_volume
 
 
-def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_dose: float, number_of_fractions: int = 5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose:float  = 8, dose_steps: float = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114, minimum_benefit = 0):
+def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_dose: float, steepness: float, number_of_fractions: int = 5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose:float  = 8, dose_steps: float = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114, minimum_benefit = 0):
     """The core function computes the optimal dose for a single fraction.
     The function optimizes the fractionation based on an objective function
     which aims to maximize the tumor coverage, i.e. minimize the dose when
@@ -69,8 +72,8 @@ def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_
         for state, fraction_state in enumerate(np.arange(number_of_fractions, fraction-1, -1)):
             
             if (state == number_of_fractions - 1):  # first fraction with no prior dose delivered so we dont loop through dose_space
-                overlap_penalty = (np.outer(volume_space, (delivered_doses - min_dose).clip(0))).clip(0) #This means only values over min_dose get a penalty. Values below min_dose do not get a reward
-                actual_penalty = (actual_volume * (delivered_doses - min_dose).clip(0)).clip(0)
+                overlap_penalty = penalty_calc_matrix(delivered_doses, volume_space, min_dose, mean_dose, steepness) #This means only values over min_dose get a penalty. Values below min_dose do not get a reward
+                actual_penalty = penalty_calc_single_volume(delivered_doses, min_dose, mean_dose, actual_volume, steepness)
                 future_values_func = interp1d(dose_space, (values[state - 1] * probabilities).sum(axis=1))
                 future_values = future_values_func(delivered_doses)  # for each action and sparing factor calculate the penalty of the action and add the future value we will only have as many future values as we have actions
                 values_actual_frac = -overlap_penalty + future_values
@@ -80,8 +83,8 @@ def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_
 
             elif (fraction_state == fraction and fraction != number_of_fractions):  # actual fraction but not first fraction
                 delivered_doses_clipped = delivered_doses[0 : max_action(accumulated_dose, delivered_doses, goal)+1]
-                overlap_penalty = (np.outer(volume_space, (delivered_doses - min_dose).clip(0))).clip(0) #This means only values over min_dose get a penalty. Values below min_dose do not get a reward
-                actual_penalty = (actual_volume * (delivered_doses_clipped - min_dose).clip(0)).clip(0)
+                overlap_penalty = penalty_calc_matrix(delivered_doses_clipped, volume_space, min_dose, mean_dose, steepness) #This means only values over min_dose get a penalty.
+                actual_penalty = penalty_calc_single_volume(delivered_doses_clipped, min_dose, mean_dose, actual_volume, steepness)
                 future_doses = accumulated_dose + delivered_doses_clipped
                 future_doses[future_doses > goal] = bound
                 penalties = np.zeros(future_doses.shape)
@@ -103,15 +106,13 @@ def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_
                     best_action = max_dose
                 actual_policy = best_action
                 actual_value = np.zeros(1)
-
-                
         
             else: #any fraction that is not the actual one
                 future_value_prob = (values[state - 1] * probabilities).sum(axis=1)
                 future_values_func = interp1d(dose_space, future_value_prob)
                 for tumor_index, tumor_value in enumerate(dose_space):  # this and the next for loop allow us to loop through all states
                     delivered_doses_clipped = delivered_doses[0 : max_action(tumor_value, delivered_doses, goal)+1]  # we only allow the actions that do not overshoot
-                    overlap_penalty = (np.outer(volume_space, (delivered_doses_clipped - min_dose).clip(0))).clip(0) #This means only values over min_dose get a penalty. This results in a volume_space x doses space
+                    overlap_penalty = penalty_calc_matrix(delivered_doses_clipped, volume_space, min_dose, mean_dose, steepness) #This means only values over min_dose get a penalty.
                     if state != 0:
                         future_doses = tumor_value + delivered_doses_clipped
                         future_doses[future_doses > goal] = bound #all overdosing doses are set to the penalty state
@@ -141,7 +142,7 @@ def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_
                     values[state][tumor_index] = valer
                 
     physical_dose = np.round(actual_policy,2)
-    penalty_added = actual_volume * (physical_dose - min_dose).clip(0)
+    penalty_added = penalty_calc_single(physical_dose, min_dose, mean_dose, actual_volume, steepness)
     final_penalty = np.max(actual_value) - penalty_added
     if minimum_benefit < 0:
         expected_future_overlaps = np.mean(volumes)
@@ -157,7 +158,7 @@ def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_
     return [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]
     
    
-def adaptfx_full(volumes: list, number_of_fractions: int = 5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose: float = 8, dose_steps: float = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114, minimum_benefit: float = 0):
+def adaptfx_full(volumes: list, number_of_fractions: int = 5, steepness: float = -0.5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose: float = 8, dose_steps: float = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114, minimum_benefit: float = 0):
     """Computes a full adaptive fractionation plan when all overlap volumes are given.
 
     Args:
@@ -176,16 +177,16 @@ def adaptfx_full(volumes: list, number_of_fractions: int = 5, min_dose: float = 
     accumulated_doses = np.zeros(number_of_fractions)
     for index, frac in enumerate(range(1,number_of_fractions +1)):
         if frac != number_of_fractions:
-            [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac, volumes = volumes[:-number_of_fractions+frac], accumulated_dose = accumulated_doses[index], number_of_fractions= number_of_fractions, min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta, minimum_benefit = minimum_benefit)
+            [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac, volumes = volumes[:-number_of_fractions+frac], accumulated_dose = accumulated_doses[index], steepness = steepness, number_of_fractions= number_of_fractions, min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta, minimum_benefit = minimum_benefit)
             accumulated_doses[index+1] = accumulated_doses[index] + physical_dose
         else:
-            [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac, volumes = volumes,accumulated_dose = accumulated_doses[index], number_of_fractions= number_of_fractions, min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta, minimum_benefit = minimum_benefit)
+            [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]  = adaptive_fractionation_core(fraction = frac, volumes = volumes,accumulated_dose = accumulated_doses[index], steepness = steepness, number_of_fractions= number_of_fractions, min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta, minimum_benefit = minimum_benefit)
         physical_doses[index] = physical_dose
     total_penalty = ((physical_doses - min_dose) * volumes[-number_of_fractions:]).sum()
     return physical_doses, accumulated_doses, total_penalty
 
 
-def precompute_plan(fraction: int, volumes: np.ndarray, accumulated_dose: float, number_of_fractions: int = 5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose:float  = 8, dose_steps = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114, minimum_benefit:float = 0):
+def precompute_plan(fraction: int, volumes: np.ndarray, accumulated_dose: float, number_of_fractions: int = 5, steepness: float = -0.5, min_dose: float = 7.5, max_dose: float = 9.5, mean_dose:float  = 8, dose_steps = 0.25, alpha: float = 0.8909285040669036, beta:float = 0.522458969735114, minimum_benefit:float = 0):
     """Precomputes all possible delivered doses in the next fraction by looping through possible
     observed overlap volumes. Returning a df and two lists with the overlap volumes and
     the respective dose that would be delivered.
@@ -211,7 +212,7 @@ def precompute_plan(fraction: int, volumes: np.ndarray, accumulated_dose: float,
     volumes_to_check = np.arange(0,distribution_max,0.1)
     predicted_policies = np.zeros(len(volumes_to_check))
     for index, volume in enumerate(volumes_to_check):
-        [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty] = adaptive_fractionation_core(fraction = fraction, volumes = np.append(volumes,volume), accumulated_dose = accumulated_dose, number_of_fractions = number_of_fractions, min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta, minimum_benefit = minimum_benefit)
+        [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty] = adaptive_fractionation_core(fraction = fraction, volumes = np.append(volumes,volume), accumulated_dose = accumulated_dose, steepness = steepness, number_of_fractions = number_of_fractions, min_dose = min_dose, max_dose = max_dose, mean_dose = mean_dose, dose_steps = dose_steps, alpha = alpha, beta = beta, minimum_benefit = minimum_benefit)
         predicted_policies[index] = physical_dose
     data = {'volume': volumes_to_check,
             'dose': predicted_policies}

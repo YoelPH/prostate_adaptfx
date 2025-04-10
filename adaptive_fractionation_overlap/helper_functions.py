@@ -119,6 +119,40 @@ def probdist(X,state_space):
         prob[idx] = X.cdf(state + spacing/2) - X.cdf(state - spacing/2)
     return np.array(prob) #note: this will only add up to roughly 96% instead of 100%
 
+def penalty_calc_single(physical_dose, min_dose, mean_dose, actual_volume, steepness):
+    """
+    This function calculates the penalty for the given dose and volume by adding the triangle arising from the dose gradient
+    if the dose delivered is larger than the uniform fractionated dose.
+    """
+    if physical_dose > mean_dose:
+        penalty_added = (physical_dose - min_dose) * (actual_volume + (physical_dose - min_dose)*steepness/2)
+    else:
+        penalty_added = actual_volume * (physical_dose - min_dose)
+    return penalty_added
+
+def penalty_calc_single_volume(delivered_doses, min_dose, mean_dose, actual_volume, steepness):
+    """
+    This function calculates the penalty for the given doses and single volume by adding the triangle arising from the dose gradient
+    if the dose delivered is larger than the uniform fractionated dose.
+    """
+    overlap_penalty_linear = (delivered_doses - min_dose) * actual_volume
+    overlap_penalty_quadratic = (delivered_doses - min_dose)**2*steepness/2
+    overlap_penalty_quadratic[delivered_doses < mean_dose] = 0
+    overlap_penalty = overlap_penalty_linear + overlap_penalty_quadratic
+    return overlap_penalty
+
+
+def penalty_calc_matrix(delivered_doses, volume_space, min_dose, mean_dose, steepness):
+    """
+    This function calculates the penalty for the given dose and volume by adding the triangle arising from the dose gradient
+    if the dose delivered is larger than the uniform fractionated dose.
+    """
+    overlap_penalty_linear = (np.outer(volume_space, (delivered_doses - min_dose)))
+    overlap_penalty_quadratic = (delivered_doses - min_dose)**2*steepness/2
+    overlap_penalty_quadratic[delivered_doses < mean_dose] = 0
+    overlap_penalty = overlap_penalty_linear + overlap_penalty_quadratic
+    return overlap_penalty
+
 def max_action(accumulated_dose, dose_space, goal):
     """
     Computes the maximal dose that can be delivered to the tumor in each fraction depending on the actual accumulated dose
