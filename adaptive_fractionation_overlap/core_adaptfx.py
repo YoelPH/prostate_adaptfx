@@ -158,17 +158,6 @@ def adaptive_fractionation_core(fraction: int, volumes: np.ndarray, accumulated_
     penalty_added = penalty_calc_single(physical_dose, min_dose, mean_dose, actual_volume, steepness_penalty)
     benefit_added = benefit_calc_single(physical_dose, mean_dose, actual_volume, steepness_benefit)
     final_penalty = np.max(actual_value) - penalty_added + benefit_added
-    if minimum_benefit < 0:
-        expected_future_overlaps = np.mean(volumes)
-        mean_penalty = -(expected_future_overlaps * (mean_dose - min_dose)) * (number_of_fractions - fraction +1 )
-        benefit = mean_penalty - final_penalty
-        # print(fraction, expected_future_overlaps)
-        # print(final_penalty, mean_penalty, benefit)
-        # print(benefit > minimum_benefit, accumulated_dose/mean_dose == fraction - 1)
-        if (benefit > minimum_benefit) and (accumulated_dose/mean_dose == fraction - 1):
-            physical_dose = mean_dose
-            penalty_added = actual_volume * (physical_dose - min_dose)
-            final_penalty = np.max(actual_value) - penalty_added
     return [policies, policies_overlap, volume_space, physical_dose, penalty_added, values, dose_space, probabilities, final_penalty]
     
    
