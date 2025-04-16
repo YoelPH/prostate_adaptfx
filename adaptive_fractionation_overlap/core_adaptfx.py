@@ -191,6 +191,7 @@ def adaptfx_full(volumes: list, number_of_fractions: int = 5, steepness: float =
             print(((dose - min_dose) * volumes[-number_of_fractions+index]))
             total_penalty += ((dose - min_dose) * volumes[-number_of_fractions+index])
         else:
+            print(((dose - min_dose) * volumes[-number_of_fractions+index] + (dose - min_dose)**2 * steepness/2))
             total_penalty += ((dose - min_dose) * volumes[-number_of_fractions+index] + (dose - min_dose)**2 * steepness/2)
     return physical_doses, accumulated_doses, total_penalty
 
