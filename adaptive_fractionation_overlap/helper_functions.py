@@ -124,6 +124,7 @@ def penalty_calc_single(physical_dose, min_dose, mean_dose, actual_volume, steep
     This function calculates the penalty for the given dose and volume by adding the triangle arising from the dose gradient
     if the dose delivered is larger than the uniform fractionated dose.
     """
+    steepness = np.abs(steepness)
     if physical_dose > mean_dose:
         penalty_added = (physical_dose - min_dose) * (actual_volume + (physical_dose - min_dose)*steepness/2)
     else:
@@ -135,9 +136,10 @@ def penalty_calc_single_volume(delivered_doses, min_dose, mean_dose, actual_volu
     This function calculates the penalty for the given doses and single volume by adding the triangle arising from the dose gradient
     if the dose delivered is larger than the uniform fractionated dose.
     """
+    steepness = np.abs(steepness)
     overlap_penalty_linear = (delivered_doses - min_dose) * actual_volume
     overlap_penalty_quadratic = (delivered_doses - min_dose)**2*steepness/2
-    overlap_penalty_quadratic[delivered_doses < mean_dose] = 0
+    overlap_penalty_quadratic[delivered_doses <= mean_dose] = 0
     overlap_penalty = overlap_penalty_linear + overlap_penalty_quadratic
     return overlap_penalty
 
@@ -147,9 +149,10 @@ def penalty_calc_matrix(delivered_doses, volume_space, min_dose, mean_dose, stee
     This function calculates the penalty for the given dose and volume by adding the triangle arising from the dose gradient
     if the dose delivered is larger than the uniform fractionated dose.
     """
+    steepness = np.abs(steepness)
     overlap_penalty_linear = (np.outer(volume_space, (delivered_doses - min_dose)))
     overlap_penalty_quadratic = (delivered_doses - min_dose)**2*steepness/2
-    overlap_penalty_quadratic[delivered_doses < mean_dose] = 0
+    overlap_penalty_quadratic[delivered_doses <= mean_dose] = 0
     overlap_penalty = overlap_penalty_linear + overlap_penalty_quadratic
     return overlap_penalty
 
@@ -216,9 +219,9 @@ def analytic_plotting(fraction: int, number_of_fractions: int, values: np.ndarra
     Returns:
         matplotlib.fig: returns a figure with all values plotted as subfigures
     """
-    values[values < -10000000000] = -20.222222222222
+    values[values < -10000000000] = 10000000000
     min_Value = np.min(values)
-    values[values == -20.222222222222] = 1.1*min_Value
+    values[values == 10000000000] = 1.1*min_Value
     colormap = plt.cm.get_cmap('jet')
     number_of_plots = number_of_fractions - fraction
     fig, axs = plt.subplots(1,number_of_plots, figsize = (number_of_plots*10,10))
