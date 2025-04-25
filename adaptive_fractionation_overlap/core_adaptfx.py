@@ -189,15 +189,11 @@ def adaptfx_full(volumes: list, number_of_fractions: int = 5, steepness_penalty:
         physical_doses[index] = physical_dose
     total_penalty = 0
     for index, dose in enumerate(physical_doses):
-        print(index)
-        print('steepness_penalty',steepness_penalty)
-        print('steepness_benefit',steepness_benefit)
-        if dose <= mean_dose:
-            print('benefit',benefit_calc_single(dose, mean_dose, volumes[-number_of_fractions+index] , steepness_benefit))
-            total_penalty += benefit_calc_single(dose, mean_dose, volumes[-number_of_fractions+index] , steepness_benefit)
-        else:
-            print('penalty',penalty_calc_single(dose, min_dose, mean_dose, volumes[-number_of_fractions+index], steepness_penalty))
-            total_penalty -= penalty_calc_single(dose, min_dose, mean_dose, volumes[-number_of_fractions+index], steepness_penalty)
+        print(index, dose)
+        print('benefit',benefit_calc_single(dose, mean_dose, volumes[-number_of_fractions+index] , steepness_benefit))
+        total_penalty += benefit_calc_single(dose, mean_dose, volumes[-number_of_fractions+index] , steepness_benefit)
+        print('penalty',penalty_calc_single(dose, min_dose, mean_dose, volumes[-number_of_fractions+index], steepness_penalty))
+        total_penalty -= penalty_calc_single(dose, min_dose, mean_dose, volumes[-number_of_fractions+index], steepness_penalty)
     return physical_doses, accumulated_doses, total_penalty
 
 
